@@ -22,6 +22,7 @@ public class LottoController {
         return ResponseEntity.ok(lottoService.getPredictNum(user_id));
     }
 
+
     @GetMapping("/readHitData")
     public ResponseEntity<ReadLottoRecentRoundResponse> readLottoRecentRound() throws SimpleException {
         return ResponseEntity.ok(this.lottoService.readRecentLottoRound());

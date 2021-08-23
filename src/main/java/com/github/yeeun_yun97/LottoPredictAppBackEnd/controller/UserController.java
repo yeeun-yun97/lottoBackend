@@ -44,6 +44,12 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/saveNumber")
+    public ResponseEntity<SimpleOkResponse> CreateNumber(@RequestBody CreateNumberRequest request)throws SimpleException {
+        SimpleOkResponse response = userService.saveNumber(request.getNumbers(), request.getUser_id());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/readHistory")
     public ResponseEntity<Page<ReadSaveResponse>> ReadSaveHistory(@RequestBody ReadSaveRequest readSaveRequest) throws SimpleException {
         Page<ReadSaveResponse> response=userService.readSaveHistory(1,readSaveRequest.getPage_num(),readSaveRequest.getUser_id());

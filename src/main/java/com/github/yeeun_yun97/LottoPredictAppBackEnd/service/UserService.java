@@ -2,6 +2,7 @@ package com.github.yeeun_yun97.LottoPredictAppBackEnd.service;
 
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.*;
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.exception.SimpleException;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.exception.UserNotFoundException;
 import org.springframework.data.domain.Page;
 
 public interface UserService {
@@ -12,4 +13,6 @@ public interface UserService {
     Page<ReadSaveResponse> readSaveHistory(int page_size, int page_num, Long user_id) throws SimpleException;
 
     ReadUserInfoResponse readUserInfo(Long user_id) throws SimpleException;
+
+    SimpleOkResponse saveNumber(int[] numbers, Long user_id) throws UserNotFoundException;
 }

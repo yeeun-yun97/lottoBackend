@@ -1,11 +1,12 @@
 package com.github.yeeun_yun97.LottoPredictAppBackEnd.service;
 
-import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.*;
-import com.github.yeeun_yun97.LottoPredictAppBackEnd.entity.ESaveState;
-import com.github.yeeun_yun97.LottoPredictAppBackEnd.entity.Save;
-import com.github.yeeun_yun97.LottoPredictAppBackEnd.entity.User;
-import com.github.yeeun_yun97.LottoPredictAppBackEnd.entity.UserRound;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.ReadSaveResponse;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.ReadUserInfoResponse;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.RegisterResponse;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.dto.SimpleOkResponse;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.entity.*;
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.exception.*;
+import com.github.yeeun_yun97.LottoPredictAppBackEnd.repository.RoundRepository;
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.repository.SaveRepository;
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.repository.UserRepository;
 import com.github.yeeun_yun97.LottoPredictAppBackEnd.repository.UserRoundRepository;
@@ -27,10 +28,12 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SaveRepository saveRepository;
     private final UserRoundRepository userRoundRepository;
+    private final RoundRepository roundRepository;
 
-    public UserServiceImpl(UserRepository userRepository, SaveRepository saveRepository, UserRoundRepository userRoundRepository) {
+    public UserServiceImpl(UserRepository userRepository, SaveRepository saveRepository, UserRoundRepository userRoundRepository, RoundRepository roundRepository) {
         this.userRepository = userRepository;
         this.userRoundRepository = userRoundRepository;
+        this.roundRepository = roundRepository;
         this.bCryptPasswordEncoder = new BCryptPasswordEncoder();
         this.saveRepository = saveRepository;
     }
@@ -74,5 +77,33 @@ public class UserServiceImpl implements UserService {
     public ReadUserInfoResponse readUserInfo(Long user_id) throws SimpleException{
         User user = this.userRepository.findById(user_id).orElseThrow(UserNotFoundException::new);
         return  ReadUserInfoResponse.builder().name(user.getName()).build();
+    }
+
+    @Override
+    public SimpleOkResponse saveNumber(int[] numbers, Long user_id) throws UserNotFoundException {
+        User user = this.userRepository.findById(user_id).orElseThrow(UserNotFoundException::new);
+
+        Round round = this.roundRepository.findFirstByOrderByRoundNumDesc();
+
+        Optional<UserRound> optUserRound= this.userRoundRepository.findByUserAndRound(user,round);
+        UserRound userRound;
+        if(optUserRound.isPresent()) {
+            userRound = optUserRound.get();
+        }else{
+            userRound= UserRound.builder().round(round).user(user).build();
+            this.userRoundRepository.save(userRound);
+        }
+
+        //save save
+        Save save = Save.builder()
+                .first(numbers[0]).second(numbers[1])
+                .third(numbers[2]).fourth(numbers[3])
+                .fifth(numbers[4]).sixth(numbers[5])
+                .saveState(ESaveState.SAVED)
+                .userRound(userRound)
+                .build();
+        this.saveRepository.save(save);
+
+        return SimpleOkResponse.builder().message(SUCCESSFUL_SAVE_TO_HISTORY_MESSAGE).build();
     }
 }
